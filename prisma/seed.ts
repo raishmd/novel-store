@@ -31,6 +31,7 @@ async function main() {
         { key: "siteName", value: "متجر الروايات" },
         { key: "authorName", value: "اسم الكاتب" },
         { key: "authorBio", value: "كاتب ورائي عربي، يكتب بحب وشغف." },
+        { key: "contactEmail", value: "contact@example.com" },
       ],
     })
     console.log("✅ تم إنشاء الإعدادات الافتراضية")

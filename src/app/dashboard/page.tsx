@@ -49,7 +49,7 @@ export default function DashboardHome() {
     },
     {
       label: "الإيرادات",
-      value: `${stats.revenue.toFixed(2)} د.ل`,
+      value: `$${stats.revenue.toFixed(2)}`,
       icon: HiOutlineCurrencyDollar,
       color: "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400",
     },
@@ -101,6 +101,20 @@ export default function DashboardHome() {
             className="flex items-center justify-between p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
           >
             <span className="font-medium">إدارة الروايات</span>
+            <HiOutlineArrowLeft className="w-5 h-5 text-zinc-400" />
+          </Link>
+          <Link
+            href="/dashboard/messages"
+            className="flex items-center justify-between p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+          >
+            <span className="font-medium">عرض الرسائل</span>
+            <HiOutlineArrowLeft className="w-5 h-5 text-zinc-400" />
+          </Link>
+          <Link
+            href="/dashboard/contact"
+            className="flex items-center justify-between p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+          >
+            <span className="font-medium">إعدادات التواصل</span>
             <HiOutlineArrowLeft className="w-5 h-5 text-zinc-400" />
           </Link>
           <Link

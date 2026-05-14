@@ -1,10 +1,7 @@
 import Stripe from "stripe"
 
 function createStripe() {
-  return new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: "2025-02-24",
-    typescript: true,
-  })
+  return new Stripe(process.env.STRIPE_SECRET_KEY!)
 }
 
 let _stripe: Stripe | null = null

@@ -48,6 +48,18 @@ export function Header() {
             >
               الروايات
             </Link>
+            <Link
+              href="/about"
+              className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+            >
+              عن الكاتب
+            </Link>
+            <Link
+              href="/contact"
+              className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+            >
+              اتصل بنا
+            </Link>
             {session?.user && (
               <Link
                 href="/dashboard"
@@ -91,6 +103,20 @@ export function Header() {
               onClick={() => setMenuOpen(false)}
             >
               الروايات
+            </Link>
+            <Link
+              href="/about"
+              className="block text-sm text-zinc-600 dark:text-zinc-400 py-2"
+              onClick={() => setMenuOpen(false)}
+            >
+              عن الكاتب
+            </Link>
+            <Link
+              href="/contact"
+              className="block text-sm text-zinc-600 dark:text-zinc-400 py-2"
+              onClick={() => setMenuOpen(false)}
+            >
+              اتصل بنا
             </Link>
             {session?.user && (
               <Link

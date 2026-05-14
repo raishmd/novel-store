@@ -1,9 +1,9 @@
 export function formatPrice(price: number): string {
-  return `${price.toFixed(2)} د.ل`
+  return `$${price.toFixed(2)}`
 }
 
 export function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat("ar-LY", {
+  return new Intl.DateTimeFormat("ar-LY-u-nu-latn", {
     year: "numeric",
     month: "long",
     day: "numeric",

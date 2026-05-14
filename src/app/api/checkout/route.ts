@@ -17,6 +17,10 @@ export async function POST(request: Request) {
 
     const origin = request.headers.get("origin") || "http://localhost:3000"
 
+    const coverImage = novel.coverImage.startsWith("http")
+      ? novel.coverImage
+      : `${origin}${novel.coverImage}`
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
@@ -26,7 +30,7 @@ export async function POST(request: Request) {
             product_data: {
               name: novel.title,
               description: novel.description.substring(0, 100),
-              images: [novel.coverImage],
+              images: [coverImage],
             },
             unit_amount: Math.round(novel.price * 100),
           },

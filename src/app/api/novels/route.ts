@@ -2,12 +2,19 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 
-export async function GET() {
-  const novels = await prisma.novel.findMany({
-    where: { published: true },
-    orderBy: { createdAt: "desc" },
-  })
-  return NextResponse.json(novels)
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const all = searchParams.get("all") === "true"
+
+    const novels = await prisma.novel.findMany({
+      where: all ? {} : { published: true },
+      orderBy: { sortOrder: "asc" },
+    })
+    return NextResponse.json(novels)
+  } catch {
+    return NextResponse.json([])
+  }
 }
 
 export async function POST(request: Request) {

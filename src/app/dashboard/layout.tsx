@@ -11,6 +11,9 @@ import {
   HiOutlineShoppingCart,
   HiOutlineCog,
   HiOutlineLogout,
+  HiOutlineMail,
+  HiOutlineChat,
+  HiOutlineUser,
 } from "react-icons/hi"
 import { signOut } from "next-auth/react"
 
@@ -18,6 +21,9 @@ const navItems = [
   { href: "/dashboard", label: "الرئيسية", icon: HiOutlineHome },
   { href: "/dashboard/novels", label: "الروايات", icon: HiOutlineBookOpen },
   { href: "/dashboard/orders", label: "الطلبات", icon: HiOutlineShoppingCart },
+  { href: "/dashboard/messages", label: "الرسائل", icon: HiOutlineMail },
+  { href: "/dashboard/author", label: "الكاتب", icon: HiOutlineUser },
+  { href: "/dashboard/contact", label: "التواصل", icon: HiOutlineChat },
   { href: "/dashboard/settings", label: "الإعدادات", icon: HiOutlineCog },
 ]
 
@@ -53,7 +59,9 @@ export default function DashboardLayout({
           <nav className="flex-1 space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon
-              const active = pathname === item.href
+              const active = item.href === "/dashboard"
+                ? pathname === "/dashboard"
+                : pathname.startsWith(item.href)
               return (
                 <Link
                   key={item.href}
@@ -90,7 +98,9 @@ export default function DashboardLayout({
         <div className="flex items-center justify-around py-2">
           {navItems.map((item) => {
             const Icon = item.icon
-            const active = pathname === item.href
+            const active = item.href === "/dashboard"
+              ? pathname === "/dashboard"
+              : pathname.startsWith(item.href)
             return (
               <Link
                 key={item.href}
