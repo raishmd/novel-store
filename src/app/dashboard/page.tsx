@@ -56,7 +56,7 @@ export default function DashboardHome() {
   ]
 
   return (
-    <div>
+    <div className="max-w-4xl mx-auto">
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold mb-2">
           مرحباً، {session?.user?.name || "المدير"}
@@ -84,7 +84,7 @@ export default function DashboardHome() {
         })}
       </div>
 
-      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 animate-fade-in animate-delay-1">
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold">إجراءات سريعة</h2>
         </div>

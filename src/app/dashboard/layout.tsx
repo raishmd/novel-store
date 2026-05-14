@@ -22,7 +22,7 @@ const navItems = [
   { href: "/dashboard/novels", label: "الروايات", icon: HiOutlineBookOpen },
   { href: "/dashboard/orders", label: "الطلبات", icon: HiOutlineShoppingCart },
   { href: "/dashboard/messages", label: "الرسائل", icon: HiOutlineMail },
-  { href: "/dashboard/author", label: "الكاتب", icon: HiOutlineUser },
+
   { href: "/dashboard/contact", label: "التواصل", icon: HiOutlineChat },
   { href: "/dashboard/settings", label: "الإعدادات", icon: HiOutlineCog },
 ]
@@ -88,15 +88,15 @@ export default function DashboardLayout({
           </button>
         </aside>
 
-        <div className="flex-1 mr-0 md:mr-64 p-4 sm:p-8">
+        <div className="flex-1 min-w-0 mr-0 md:mr-64 p-4 sm:p-8 pb-20 md:pb-8 overflow-x-hidden">
           {children}
         </div>
       </div>
 
       {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black z-50">
-        <div className="flex items-center justify-around py-2">
-          {navItems.map((item) => {
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black z-50 px-2">
+        <div className="flex items-center justify-between gap-1 py-1 overflow-x-auto">
+          {navItems.slice(0, 5).map((item) => {
             const Icon = item.icon
             const active = item.href === "/dashboard"
               ? pathname === "/dashboard"
@@ -105,26 +105,28 @@ export default function DashboardLayout({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
+                className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-medium transition-colors shrink-0 ${
                   active
                     ? "text-zinc-900 dark:text-zinc-100"
                     : "text-zinc-400 dark:text-zinc-500"
                 }`}
               >
                 <Icon className="w-5 h-5" />
-                {item.label}
+                <span className="whitespace-nowrap">{item.label}</span>
               </Link>
             )
           })}
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
-            className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium text-zinc-400 dark:text-zinc-500"
+            className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-medium text-zinc-400 dark:text-zinc-500 shrink-0"
           >
             <HiOutlineLogout className="w-5 h-5" />
             خروج
           </button>
         </div>
       </nav>
+      {/* Spacer for mobile bottom nav */}
+      <div className="md:hidden h-16" />
     </div>
   )
 }

@@ -50,7 +50,7 @@ export default function OrdersPage() {
   const totalRevenue = orders.reduce((sum, o) => sum + o.amount, 0)
 
   return (
-    <div>
+    <div className="max-w-4xl mx-auto">
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold">الطلبات</h1>
         <p className="text-zinc-500 dark:text-zinc-400 mt-1">

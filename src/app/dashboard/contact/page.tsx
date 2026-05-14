@@ -88,16 +88,16 @@ export default function ContactSettingsPage() {
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
+    <div className="max-w-2xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-2xl font-bold">إعدادات التواصل</h1>
-          <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">إدارة معلومات التواصل وروابط التواصل الاجتماعي</p>
+          <h1 className="text-xl sm:text-2xl font-bold">إعدادات التواصل</h1>
+          <p className="text-zinc-500 dark:text-zinc-400 text-xs sm:text-sm mt-1">إدارة معلومات التواصل وروابط التواصل الاجتماعي</p>
         </div>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium text-sm hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium text-sm hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50"
         >
           {saving ? (
             <div className="w-4 h-4 border-2 border-white dark:border-zinc-900 border-t-transparent rounded-full animate-spin" />
@@ -109,8 +109,8 @@ export default function ContactSettingsPage() {
       </div>
 
       <div className="grid gap-6">
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6">
-          <h2 className="text-lg font-bold mb-5">معلومات التواصل الأساسية</h2>
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 sm:p-6">
+          <h2 className="text-base sm:text-lg font-bold mb-4 sm:mb-5">معلومات التواصل الأساسية</h2>
           <div className="grid sm:grid-cols-2 gap-5">
             {fields.map(f => (
               <div key={f.key}>
@@ -132,9 +132,9 @@ export default function ContactSettingsPage() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-lg font-bold">روابط مخصصة</h2>
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 sm:p-6">
+          <div className="flex items-center justify-between mb-4 sm:mb-5">
+            <h2 className="text-base sm:text-lg font-bold">روابط مخصصة</h2>
             <button
               onClick={addCustomLink}
               className="flex items-center gap-2 px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
@@ -149,8 +149,8 @@ export default function ContactSettingsPage() {
           ) : (
             <div className="space-y-3">
               {customLinks.map((link, i) => (
-                <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700">
-                  <div className="text-zinc-400">
+                <div key={i} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700">
+                  <div className="hidden sm:flex text-zinc-400 shrink-0">
                     <FaLink className="w-4 h-4" />
                   </div>
                   <input
@@ -158,20 +158,20 @@ export default function ContactSettingsPage() {
                     value={link.label}
                     onChange={e => updateCustomLink(i, "label", e.target.value)}
                     placeholder="اسم المنصة"
-                    className="flex-1 px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-all text-sm"
+                    className="w-full sm:flex-1 px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-all text-sm"
                   />
                   <input
                     type="text"
                     value={link.url}
                     onChange={e => updateCustomLink(i, "url", e.target.value)}
                     placeholder="https://..."
-                    className="flex-[2] px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-all text-sm"
+                    className="w-full sm:flex-[2] px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-all text-sm"
                   />
                   <button
                     onClick={() => removeCustomLink(i)}
-                    className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-zinc-400 hover:text-red-500 transition-colors"
+                    className="w-full sm:w-auto p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-zinc-400 hover:text-red-500 transition-colors shrink-0"
                   >
-                    <HiOutlineX className="w-4 h-4" />
+                    <HiOutlineX className="w-4 h-4 mx-auto" />
                   </button>
                 </div>
               ))}

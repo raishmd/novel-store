@@ -66,10 +66,10 @@ export default function MessagesPage() {
   }
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold">الرسائل</h1>
-        <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">إدارة الرسائل الواردة من زوار الموقع</p>
+    <div className="max-w-4xl mx-auto">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold">الرسائل</h1>
+        <p className="text-zinc-500 dark:text-zinc-400 text-xs sm:text-sm mt-1">إدارة الرسائل الواردة من زوار الموقع</p>
       </div>
 
       <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
@@ -85,12 +85,12 @@ export default function MessagesPage() {
                 className="w-full pr-10 pl-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-all text-sm"
               />
             </form>
-            <div className="flex gap-2">
+            <div className="flex gap-1.5 sm:gap-2">
               {["all", "unread", "read"].map(f => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                  className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
                     filter === f
                       ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
                       : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
@@ -133,31 +133,31 @@ export default function MessagesPage() {
                     {!msg.read && (
                       <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />
                     )}
-                    <span className="text-xs text-zinc-400 mr-auto shrink-0">{formatDate(msg.createdAt)}</span>
+                    <span className="text-[10px] sm:text-xs text-zinc-400 mr-auto shrink-0">{formatDate(msg.createdAt)}</span>
                   </div>
-                  <p className="text-sm text-zinc-500 mb-1 truncate">{msg.subject}</p>
-                  <p className="text-xs text-zinc-400 truncate">{msg.email}</p>
+                  <p className="text-xs sm:text-sm text-zinc-500 mb-0.5 truncate">{msg.subject}</p>
+                  <p className="text-[10px] sm:text-xs text-zinc-400 truncate">{msg.email}</p>
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
+                <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
                   <Link
                     href={`/dashboard/messages/${msg.id}`}
-                    className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                    className="p-1.5 sm:p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
                   >
-                    <HiOutlineChevronLeft className="w-4 h-4" />
+                    <HiOutlineChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </Link>
                   <button
                     onClick={() => toggleRead(msg.id, msg.read)}
-                    className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                    className="p-1.5 sm:p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
                     title={msg.read ? "تحديد كغير مقروء" : "تحديد كمقروء"}
                   >
-                    {msg.read ? <HiOutlineEyeOff className="w-4 h-4" /> : <HiOutlineEye className="w-4 h-4" />}
+                    {msg.read ? <HiOutlineEyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <HiOutlineEye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                   </button>
                   <button
                     onClick={() => deleteMessage(msg.id)}
-                    className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-zinc-400 hover:text-red-500 transition-colors"
+                    className="p-1.5 sm:p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-zinc-400 hover:text-red-500 transition-colors"
                     title="حذف"
                   >
-                    <HiOutlineTrash className="w-4 h-4" />
+                    <HiOutlineTrash className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </button>
                 </div>
               </div>

@@ -8,8 +8,13 @@ export function FaviconSync() {
       const logoUrl = localStorage.getItem("siteLogo")
       if (!logoUrl) return
 
-      const link = document.createElement("link")
-      link.rel = "icon"
+      let link = document.head.querySelector<HTMLLinkElement>('link[rel="icon"][data-custom]')
+      if (!link) {
+        link = document.createElement("link")
+        link.rel = "icon"
+        link.dataset.custom = "true"
+        document.head.appendChild(link)
+      }
       link.href = `${logoUrl}?v=${Date.now()}`
 
       const ext = logoUrl.split(".").pop()?.toLowerCase()
@@ -22,16 +27,9 @@ export function FaviconSync() {
         ico: "image/x-icon",
       }
       if (ext && mimeMap[ext]) link.type = mimeMap[ext]
-
-      document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"]').forEach((el) => el.remove())
-      document.head.appendChild(link)
     }
 
     updateFavicon()
-
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") updateFavicon()
-    })
   }, [])
 
   return null
