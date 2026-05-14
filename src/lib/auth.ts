@@ -4,8 +4,15 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import { compare } from "bcryptjs"
 import { prisma } from "./prisma"
 
+const AUTH_SECRET = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET
+
+if (!AUTH_SECRET) {
+  throw new Error("Missing AUTH_SECRET environment variable")
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
+  secret: AUTH_SECRET,
   session: { strategy: "jwt" },
   trustHost: true,
   pages: {
