@@ -48,8 +48,9 @@ export default function ContactPage() {
     setCaptchaError(false)
   }
 
+  const socialKeys = ["facebook", "instagram", "twitter", "tiktok", "linkedin", "youtube"]
   const socialLinks = Object.entries(settings)
-    .filter(([key]) => key !== "contactEmail" && key !== "siteName" && key !== "authorName" && key !== "authorBio" && key !== "authorRole")
+    .filter(([key]) => socialKeys.includes(key) || key.startsWith("custom_"))
     .filter(([, value]) => value)
 
   const handleSubmit = async (e: React.FormEvent) => {

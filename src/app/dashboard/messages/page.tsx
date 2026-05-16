@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { HiOutlineMail, HiOutlineEye, HiOutlineEyeOff, HiOutlineTrash, HiOutlineSearch, HiOutlineInbox, HiOutlineChevronLeft } from "react-icons/hi"
+import { HiOutlineMail, HiOutlineEye, HiOutlineEyeOff, HiOutlineTrash, HiOutlineSearch, HiOutlineInbox, HiOutlineChevronLeft, HiOutlineExclamation } from "react-icons/hi"
 
 interface Message {
   id: string
@@ -19,6 +19,11 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [filter, setFilter] = useState("all")
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
+  const [bulkDeleting, setBulkDeleting] = useState(false)
 
   const fetchMessages = async () => {
     setLoading(true)
@@ -42,6 +47,34 @@ export default function MessagesPage() {
     fetchMessages()
   }
 
+  const filtered = messages
+  const allFilteredSelected = filtered.length > 0 && filtered.every(m => selected.has(m.id))
+
+  const toggleSelect = (id: string) => {
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleSelectAll = () => {
+    if (allFilteredSelected) {
+      setSelected(prev => {
+        const next = new Set(prev)
+        filtered.forEach(m => next.delete(m.id))
+        return next
+      })
+    } else {
+      setSelected(prev => {
+        const next = new Set(prev)
+        filtered.forEach(m => next.add(m.id))
+        return next
+      })
+    }
+  }
+
   const toggleRead = async (id: string, read: boolean) => {
     await fetch(`/api/contact/${id}`, {
       method: "PATCH",
@@ -51,10 +84,45 @@ export default function MessagesPage() {
     setMessages(prev => prev.map(m => m.id === id ? { ...m, read: !read } : m))
   }
 
-  const deleteMessage = async (id: string) => {
-    if (!confirm("هل أنت متأكد من حذف هذه الرسالة؟")) return
-    await fetch(`/api/contact/${id}`, { method: "DELETE" })
-    setMessages(prev => prev.filter(m => m.id !== id))
+  const bulkToggleRead = async (read: boolean) => {
+    await Promise.all(
+      Array.from(selected).map(id =>
+        fetch(`/api/contact/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ read }),
+        })
+      )
+    )
+    setMessages(prev => prev.map(m => selected.has(m.id) ? { ...m, read } : m))
+    setSelected(new Set())
+  }
+
+  const deleteMessage = async () => {
+    if (!deleteId) return
+    setDeleting(true)
+    try {
+      await fetch(`/api/contact/${deleteId}`, { method: "DELETE" })
+      setMessages(prev => prev.filter(m => m.id !== deleteId))
+      setSelected(prev => { const n = new Set(prev); n.delete(deleteId!); return n })
+    } finally {
+      setDeleting(false)
+      setDeleteId(null)
+    }
+  }
+
+  const bulkDelete = async () => {
+    setBulkDeleting(true)
+    try {
+      await Promise.all(
+        Array.from(selected).map(id => fetch(`/api/contact/${id}`, { method: "DELETE" }))
+      )
+      setMessages(prev => prev.filter(m => !selected.has(m.id)))
+      setSelected(new Set())
+    } finally {
+      setBulkDeleting(false)
+      setBulkDeleteOpen(false)
+    }
   }
 
   const formatDate = (dateStr: string) => {
@@ -66,6 +134,7 @@ export default function MessagesPage() {
   }
 
   return (
+    <>
     <div className="max-w-4xl mx-auto">
       <div className="mb-6 sm:mb-8">
         <h1 className="text-xl sm:text-2xl font-bold">الرسائل</h1>
@@ -85,7 +154,17 @@ export default function MessagesPage() {
                 className="w-full pr-10 pl-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-all text-sm"
               />
             </form>
-            <div className="flex gap-1.5 sm:gap-2">
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-1.5 text-xs sm:text-sm text-zinc-500 cursor-pointer whitespace-nowrap">
+                <input
+                  type="checkbox"
+                  checked={allFilteredSelected}
+                  onChange={toggleSelectAll}
+                  className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-600 accent-zinc-900 dark:accent-zinc-100 cursor-pointer"
+                />
+                تحديد الكل
+              </label>
+              <div className="flex gap-1.5 sm:gap-2">
               {["all", "unread", "read"].map(f => (
                 <button
                   key={f}
@@ -99,9 +178,35 @@ export default function MessagesPage() {
                   {f === "all" ? "الكل" : f === "unread" ? "غير مقروء" : "مقروء"}
                 </button>
               ))}
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Bulk actions */}
+        {selected.size > 0 && (
+          <div className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-800">
+            <span className="text-sm text-zinc-500 ml-auto">{selected.size} رسالة محددة</span>
+            <button
+              onClick={() => bulkToggleRead(true)}
+              className="px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-medium hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+            >
+              تعيين مقروء
+            </button>
+            <button
+              onClick={() => bulkToggleRead(false)}
+              className="px-3 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 text-xs font-medium hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
+            >
+              تعيين غير مقروء
+            </button>
+            <button
+              onClick={bulkDelete}
+              className="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
+            >
+              حذف المحدد
+            </button>
+          </div>
+        )}
 
         {loading ? (
           <div className="flex items-center justify-center py-20">
@@ -120,8 +225,16 @@ export default function MessagesPage() {
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex items-start gap-4 p-4 sm:p-6 border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors ${!msg.read ? "bg-blue-50/50 dark:bg-blue-900/5" : ""}`}
+                className={`flex items-start gap-3 p-4 sm:p-6 border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors ${!msg.read ? "bg-blue-50/50 dark:bg-blue-900/5" : ""} ${selected.has(msg.id) ? "bg-blue-100/50 dark:bg-blue-900/20" : ""}`}
               >
+                <div className="pt-2.5">
+                  <input
+                    type="checkbox"
+                    checked={selected.has(msg.id)}
+                    onChange={() => toggleSelect(msg.id)}
+                    className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-600 accent-zinc-900 dark:accent-zinc-100 cursor-pointer"
+                  />
+                </div>
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                   msg.read ? "bg-zinc-100 dark:bg-zinc-800" : "bg-blue-100 dark:bg-blue-900/30"
                 }`}>
@@ -153,7 +266,7 @@ export default function MessagesPage() {
                     {msg.read ? <HiOutlineEyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <HiOutlineEye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                   </button>
                   <button
-                    onClick={() => deleteMessage(msg.id)}
+                    onClick={() => setDeleteId(msg.id)}
                     className="p-1.5 sm:p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-zinc-400 hover:text-red-500 transition-colors"
                     title="حذف"
                   >
@@ -165,6 +278,73 @@ export default function MessagesPage() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+
+      {/* Single delete modal */}
+      {deleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/50" onClick={() => !deleting && setDeleteId(null)} />
+          <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 max-w-sm w-full shadow-xl animate-fade-in">
+            <div className="w-12 h-12 mx-auto mb-4 rounded-2xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
+              <HiOutlineExclamation className="w-6 h-6 text-red-500" />
+            </div>
+            <h3 className="text-lg font-bold text-center mb-2">حذف الرسالة</h3>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center mb-6">هل أنت متأكد من حذف هذه الرسالة؟</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteId(null)}
+                disabled={deleting}
+                className="flex-1 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={deleteMessage}
+                disabled={deleting}
+                className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {deleting ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : "حذف"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk delete modal */}
+      {bulkDeleteOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/50" onClick={() => !bulkDeleting && setBulkDeleteOpen(false)} />
+          <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 max-w-sm w-full shadow-xl animate-fade-in">
+            <div className="w-12 h-12 mx-auto mb-4 rounded-2xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
+              <HiOutlineExclamation className="w-6 h-6 text-red-500" />
+            </div>
+            <h3 className="text-lg font-bold text-center mb-2">حذف الرسائل المحددة</h3>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center mb-6">
+              هل أنت متأكد من حذف {selected.size} رسالة؟
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setBulkDeleteOpen(false)}
+                disabled={bulkDeleting}
+                className="flex-1 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={bulkDelete}
+                disabled={bulkDeleting}
+                className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {bulkDeleting ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : "حذف الكل"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }

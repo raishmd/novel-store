@@ -14,7 +14,9 @@ export default function SettingsPage() {
   const [form, setForm] = useState({
     siteName: "متجر الروايات",
     authorName: "اسم الكاتب",
+    authorRole: "",
     authorBio: "",
+    authorImage: "",
     logo: "",
   })
   const [smtpForm, setSmtpForm] = useState({

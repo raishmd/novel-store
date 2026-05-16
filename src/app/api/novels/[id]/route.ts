@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 
@@ -37,6 +38,8 @@ export async function PUT(
         published: data.published,
       },
     })
+    revalidatePath("/")
+    revalidatePath("/api/novels")
     return NextResponse.json(novel)
   } catch {
     return NextResponse.json({ error: "فشل تحديث الرواية" }, { status: 500 })
@@ -55,6 +58,8 @@ export async function DELETE(
   const { id } = await params
   try {
     await prisma.novel.delete({ where: { id } })
+    revalidatePath("/")
+    revalidatePath("/api/novels")
     return NextResponse.json({ message: "تم الحذف بنجاح" })
   } catch {
     return NextResponse.json({ error: "فشل حذف الرواية" }, { status: 500 })

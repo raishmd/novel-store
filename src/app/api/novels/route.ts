@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 
@@ -11,7 +12,9 @@ export async function GET(request: Request) {
       where: all ? {} : { published: true },
       orderBy: { sortOrder: "asc" },
     })
-    return NextResponse.json(novels)
+    return NextResponse.json(novels, {
+      headers: { "Cache-Control": "no-store, must-revalidate" },
+    })
   } catch {
     return NextResponse.json([])
   }
@@ -35,6 +38,8 @@ export async function POST(request: Request) {
         published: data.published ?? true,
       },
     })
+    revalidatePath("/")
+    revalidatePath("/api/novels")
     return NextResponse.json(novel, { status: 201 })
   } catch {
     return NextResponse.json({ error: "فشل إنشاء الرواية" }, { status: 500 })

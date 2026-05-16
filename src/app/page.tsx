@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma"
 import { HeroSection } from "@/components/HeroSection"
 import { NovelCard } from "@/components/NovelCard"
 
+export const dynamic = "force-dynamic"
+
 async function getNovels() {
   try {
     const novels = await prisma.novel.findMany({
