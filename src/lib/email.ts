@@ -1,30 +1,43 @@
 import nodemailer from "nodemailer"
+import { prisma } from "./prisma"
 
-function getTransporter() {
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    throw new Error(
-      "SMTP_* environment variables are not configured. "
-      + "Set SMTP_HOST, SMTP_USER, and SMTP_PASS in your Vercel environment variables."
-    )
-  }
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: process.env.SMTP_SECURE === "true",
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+export async function getSmtpConfig() {
+  const settings = await prisma.setting.findMany({
+    where: {
+      key: { in: ["smtpHost", "smtpPort", "smtpSecure", "smtpUser", "smtpPass", "smtpFrom"] },
     },
   })
+  const map: Record<string, string> = {}
+  for (const s of settings) map[s.key] = s.value
+  return map
 }
 
 export async function sendPasswordResetEmail(email: string, token: string) {
+  const smtp = await getSmtpConfig()
+  const host = smtp.smtpHost || process.env.SMTP_HOST
+  const user = smtp.smtpUser || process.env.SMTP_USER
+  const pass = smtp.smtpPass || process.env.SMTP_PASS
+
+  if (!host || !user || !pass) {
+    throw new Error(
+      "SMTP_* environment variables are not configured. "
+      + "Set SMTP_HOST, SMTP_USER, and SMTP_PASS in the dashboard settings."
+    )
+  }
+
+  const transporter = nodemailer.createTransport({
+    host,
+    port: Number(smtp.smtpPort || process.env.SMTP_PORT) || 587,
+    secure: smtp.smtpSecure === "true" || process.env.SMTP_SECURE === "true",
+    auth: { user, pass },
+  })
+
   const siteName = "متجر الروايات"
   const resetUrl = `${process.env.AUTH_URL || "http://localhost:3000"}/reset-password?token=${token}`
-  const transporter = getTransporter()
+  const from = smtp.smtpFrom || process.env.SMTP_FROM || `"${siteName}" <${user}>`
 
   await transporter.sendMail({
-    from: process.env.SMTP_FROM || `"${siteName}" <${process.env.SMTP_USER}>`,
+    from,
     to: email,
     subject: `إعادة تعيين كلمة المرور - ${siteName}`,
     html: `

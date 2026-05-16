@@ -17,6 +17,14 @@ export default function SettingsPage() {
     authorBio: "",
     logo: "",
   })
+  const [smtpForm, setSmtpForm] = useState({
+    smtpHost: "",
+    smtpPort: "587",
+    smtpSecure: "false",
+    smtpUser: "",
+    smtpPass: "",
+    smtpFrom: "",
+  })
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
@@ -34,19 +42,27 @@ export default function SettingsPage() {
 
   useEffect(() => {
     getSession().then(setSession)
+    fetch("/api/settings").then(r => r.json()).then(data => {
+      if (data.siteName) setForm(prev => ({ ...prev, siteName: data.siteName }))
+      if (data.authorName) setForm(prev => ({ ...prev, authorName: data.authorName }))
+      if (data.authorRole) setForm(prev => ({ ...prev, authorRole: data.authorRole }))
+      if (data.authorBio) setForm(prev => ({ ...prev, authorBio: data.authorBio }))
+      if (data.authorImage) setForm(prev => ({ ...prev, authorImage: data.authorImage }))
+      setSmtpForm(prev => ({
+        smtpHost: data.smtpHost || "",
+        smtpPort: data.smtpPort || "587",
+        smtpSecure: data.smtpSecure || "false",
+        smtpUser: data.smtpUser || "",
+        smtpPass: "",
+        smtpFrom: data.smtpFrom || "",
+      }))
+    }).catch(() => {})
   }, [])
 
   useEffect(() => {
     if (initialized.current || !session?.user?.email) return
     initialized.current = true
-    const siteName = localStorage.getItem("siteName")
-    const authorName = localStorage.getItem("authorName")
-    const authorBio = localStorage.getItem("authorBio")
-    const logo = localStorage.getItem("siteLogo")
-    if (siteName) setForm((prev) => ({ ...prev, siteName }))
-    if (authorName) setForm((prev) => ({ ...prev, authorName }))
-    if (authorBio) setForm((prev) => ({ ...prev, authorBio }))
-    if (logo) setForm((prev) => ({ ...prev, logo }))
+    if (form.siteName) localStorage.setItem("siteName", form.siteName)
     const savedEmail = localStorage.getItem("adminEmail")
     if (savedEmail) {
       setAccountForm(prev => ({ ...prev, newEmail: savedEmail }))
@@ -61,15 +77,37 @@ export default function SettingsPage() {
     setSaved(false)
 
     localStorage.setItem("siteName", form.siteName)
-    localStorage.setItem("authorName", form.authorName)
-    localStorage.setItem("authorBio", form.authorBio)
-    if (form.logo) localStorage.setItem("siteLogo", form.logo)
 
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    try {
+      const smtpBody: Record<string, string> = {}
+      if (smtpForm.smtpHost) smtpBody.smtpHost = smtpForm.smtpHost
+      if (smtpForm.smtpPort) smtpBody.smtpPort = smtpForm.smtpPort
+      if (smtpForm.smtpSecure) smtpBody.smtpSecure = smtpForm.smtpSecure
+      if (smtpForm.smtpUser) smtpBody.smtpUser = smtpForm.smtpUser
+      if (smtpForm.smtpPass) smtpBody.smtpPass = smtpForm.smtpPass
+      if (smtpForm.smtpFrom) smtpBody.smtpFrom = smtpForm.smtpFrom
 
-    setSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          siteName: form.siteName,
+          authorName: form.authorName,
+          authorRole: form.authorRole,
+          authorBio: form.authorBio,
+          authorImage: form.authorImage,
+          ...smtpBody,
+        }),
+      })
+      if (res.ok) {
+        setSaved(true)
+        setTimeout(() => setSaved(false), 3000)
+      }
+    } catch {
+      // fallback
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleAccountSave = async (e: React.FormEvent) => {
@@ -155,6 +193,18 @@ export default function SettingsPage() {
           </div>
 
           <div>
+            <label className="block text-sm font-medium mb-2">لقب الكاتب</label>
+            <input
+              type="text"
+              value={form.authorRole}
+              onChange={(e) => setForm((prev) => ({ ...prev, authorRole: e.target.value }))}
+              placeholder="كاتب وروائي"
+              className="w-full px-4 py-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-colors text-right"
+              dir="rtl"
+            />
+          </div>
+
+          <div>
             <label className="block text-sm font-medium mb-2">نبذة عن الكاتب</label>
             <textarea
               value={form.authorBio}
@@ -167,13 +217,13 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">شعار الموقع</label>
+            <label className="block text-sm font-medium mb-2">صورة الكاتب</label>
             <div className="flex items-center gap-4">
               <label className="flex-1 flex items-center justify-center px-4 py-6 rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 cursor-pointer transition-colors">
                 <div className="text-center">
                   <HiOutlinePhotograph className="w-6 h-6 mx-auto mb-2 text-zinc-400" />
                   <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                    {form.logo ? "تغيير الشعار" : "اختر شعار الموقع"}
+                    {form.authorImage ? "تغيير الصورة" : "اختر صورة الكاتب"}
                   </p>
                 </div>
                 <input
@@ -189,15 +239,15 @@ export default function SettingsPage() {
                       const res = await fetch("/api/upload", { method: "POST", body: formData })
                       if (res.ok) {
                         const data = await res.json()
-                        setForm((prev) => ({ ...prev, logo: data.url }))
+                        setForm((prev) => ({ ...prev, authorImage: data.url }))
                       }
                     } catch {}
                   }}
                   className="hidden"
                 />
               </label>
-              {form.logo && (
-                <img src={form.logo} alt="الشعار" className="w-16 h-16 rounded-xl object-cover" />
+              {form.authorImage && (
+                <img src={form.authorImage} alt="صورة الكاتب" className="w-16 h-16 rounded-xl object-cover" />
               )}
             </div>
           </div>
@@ -358,6 +408,87 @@ export default function SettingsPage() {
               )}
             </button>
           </form>
+        </div>
+
+        {/* SMTP */}
+        <div className="mt-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6">
+          <h2 className="text-lg font-bold flex items-center gap-2 mb-6">
+            <HiOutlineMail className="w-5 h-5 text-zinc-400" />
+            إعدادات البريد الإلكتروني (SMTP)
+          </h2>
+          <div className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium mb-2">خادم SMTP</label>
+              <input
+                type="text"
+                value={smtpForm.smtpHost}
+                onChange={e => setSmtpForm(prev => ({ ...prev, smtpHost: e.target.value }))}
+                placeholder="smtp.gmail.com"
+                className="w-full px-4 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-colors text-left dir-ltr"
+                dir="ltr"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">المنفذ</label>
+                <input
+                  type="text"
+                  value={smtpForm.smtpPort}
+                  onChange={e => setSmtpForm(prev => ({ ...prev, smtpPort: e.target.value }))}
+                  placeholder="587"
+                  className="w-full px-4 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-colors text-left dir-ltr"
+                  dir="ltr"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">اتصال آمن</label>
+                <select
+                  value={smtpForm.smtpSecure}
+                  onChange={e => setSmtpForm(prev => ({ ...prev, smtpSecure: e.target.value }))}
+                  className="w-full px-4 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-colors"
+                >
+                  <option value="false">لا (587)</option>
+                  <option value="true">نعم (465)</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">البريد الإلكتروني</label>
+              <input
+                type="text"
+                value={smtpForm.smtpUser}
+                onChange={e => setSmtpForm(prev => ({ ...prev, smtpUser: e.target.value }))}
+                placeholder="lamis@mozej.com"
+                className="w-full px-4 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-colors text-left dir-ltr"
+                dir="ltr"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">كلمة مرور SMTP</label>
+              <input
+                type="password"
+                value={smtpForm.smtpPass}
+                onChange={e => setSmtpForm(prev => ({ ...prev, smtpPass: e.target.value }))}
+                placeholder="اتركه فارغاً إن لم ترد التغيير"
+                className="w-full px-4 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-colors text-left dir-ltr"
+                dir="ltr"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">اسم المرسل</label>
+              <input
+                type="text"
+                value={smtpForm.smtpFrom}
+                onChange={e => setSmtpForm(prev => ({ ...prev, smtpFrom: e.target.value }))}
+                placeholder='"متجر الروايات" <lamis@mozej.com>'
+                className="w-full px-4 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-colors text-left dir-ltr"
+                dir="ltr"
+              />
+            </div>
+            <p className="text-xs text-zinc-400">
+              يتم حفظ الإعدادات عند الضغط على "حفظ الإعدادات" في قسم معلومات الموقع أعلاه.
+            </p>
+          </div>
         </div>
     </div>
   )
