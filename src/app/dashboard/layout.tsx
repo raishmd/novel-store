@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useState, useCallback } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -17,14 +17,18 @@ import {
 import { signOut } from "next-auth/react"
 import { useSidebar } from "@/components/SidebarContext"
 
-const navItems = [
-  { href: "/dashboard", label: "الرئيسية", icon: HiOutlineHome },
-  { href: "/dashboard/novels", label: "الروايات", icon: HiOutlineBookOpen },
-  { href: "/dashboard/orders", label: "الطلبات", icon: HiOutlineShoppingCart },
-  { href: "/dashboard/messages", label: "الرسائل", icon: HiOutlineMail },
+interface Badges {
+  messages: number
+  orders: number
+}
 
-  { href: "/dashboard/contact", label: "التواصل", icon: HiOutlineChat },
-  { href: "/dashboard/settings", label: "الإعدادات", icon: HiOutlineCog },
+const navItems = [
+  { href: "/dashboard", label: "الرئيسية", icon: HiOutlineHome, badge: undefined as keyof Badges | undefined },
+  { href: "/dashboard/novels", label: "الروايات", icon: HiOutlineBookOpen, badge: undefined },
+  { href: "/dashboard/orders", label: "الطلبات", icon: HiOutlineShoppingCart, badge: "orders" as const },
+  { href: "/dashboard/messages", label: "الرسائل", icon: HiOutlineMail, badge: "messages" as const },
+  { href: "/dashboard/contact", label: "التواصل", icon: HiOutlineChat, badge: undefined },
+  { href: "/dashboard/settings", label: "الإعدادات", icon: HiOutlineCog, badge: undefined },
 ]
 
 export default function DashboardLayout({
@@ -36,6 +40,14 @@ export default function DashboardLayout({
   const router = useRouter()
   const pathname = usePathname()
   const { open, setOpen } = useSidebar()
+  const [badges, setBadges] = useState<Badges>({ messages: 0, orders: 0 })
+
+  const fetchBadges = useCallback(async () => {
+    try {
+      const res = await fetch("/api/badges")
+      if (res.ok) setBadges(await res.json())
+    } catch {}
+  }, [])
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -46,6 +58,13 @@ export default function DashboardLayout({
   useEffect(() => {
     setOpen(false)
   }, [pathname, setOpen])
+
+  useEffect(() => {
+    if (status !== "authenticated") return
+    fetchBadges()
+    const interval = setInterval(fetchBadges, 30000)
+    return () => clearInterval(interval)
+  }, [status, fetchBadges])
 
   if (status === "loading") {
     return (
@@ -62,6 +81,7 @@ export default function DashboardLayout({
       <nav className="flex-1 space-y-1">
         {navItems.map((item) => {
           const Icon = item.icon
+          const count = item.badge ? badges[item.badge] : 0
           const active = item.href === "/dashboard"
             ? pathname === "/dashboard"
             : pathname.startsWith(item.href)
@@ -76,7 +96,12 @@ export default function DashboardLayout({
               }`}
             >
               <Icon className="w-5 h-5" />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {count > 0 && (
+                <span className="min-w-[20px] h-5 flex items-center justify-center px-1.5 rounded-full bg-red-500 text-white text-[11px] font-bold leading-none">
+                  {count}
+                </span>
+              )}
             </Link>
           )
         })}
