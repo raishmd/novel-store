@@ -38,6 +38,8 @@ export default function SettingsPage() {
   const [accountSaving, setAccountSaving] = useState(false)
   const [accountSaved, setAccountSaved] = useState(false)
   const [accountError, setAccountError] = useState("")
+  const [smtpTesting, setSmtpTesting] = useState(false)
+  const [smtpTestResult, setSmtpTestResult] = useState<{ success: boolean; message: string } | null>(null)
   const initialized = useRef(false)
 
   useEffect(() => {
@@ -107,6 +109,20 @@ export default function SettingsPage() {
       // fallback
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleTestSmtp = async () => {
+    setSmtpTesting(true)
+    setSmtpTestResult(null)
+    try {
+      const res = await fetch("/api/auth/test-smtp", { method: "POST" })
+      const data = await res.json()
+      setSmtpTestResult({ success: data.success, message: data.success ? "✅ تم الاتصال بنجاح" : `❌ ${data.error}` })
+    } catch {
+      setSmtpTestResult({ success: false, message: "❌ فشل الاتصال بالخادم" })
+    } finally {
+      setSmtpTesting(false)
     }
   }
 
@@ -464,6 +480,25 @@ export default function SettingsPage() {
                 dir="ltr"
               />
             </div>
+
+            <button
+              type="button"
+              onClick={handleTestSmtp}
+              disabled={smtpTesting}
+              className="w-full py-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {smtpTesting ? (
+                <div className="w-4 h-4 border-2 border-zinc-400 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                "اختبار الاتصال"
+              )}
+            </button>
+
+            {smtpTestResult && (
+              <p className={`text-sm text-center ${smtpTestResult.success ? "text-green-500" : "text-red-500"}`}>
+                {smtpTestResult.message}
+              </p>
+            )}
           </div>
         </div>
 
