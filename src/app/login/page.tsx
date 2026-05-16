@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { HiOutlineMail, HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi"
 
 export default function LoginPage() {
@@ -99,6 +100,15 @@ export default function LoginPage() {
           {error && (
             <p className="text-red-500 text-sm text-center">{error}</p>
           )}
+
+          <div className="text-left">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+            >
+              نسيت كلمة المرور؟
+            </Link>
+          </div>
 
           <button
             type="submit"
