@@ -163,7 +163,7 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-6">
+      <form id="site-settings-form" onSubmit={handleSave} className="space-y-6">
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 space-y-6">
           <h2 className="text-lg font-bold flex items-center gap-2">
             <HiOutlineInformationCircle className="w-5 h-5 text-zinc-400" />
@@ -286,27 +286,6 @@ export default function SettingsPage() {
               </button>
             </div>
           </div>
-
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 px-6 py-3.5 rounded-2xl text-base font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {saving ? (
-              <div className="w-5 h-5 border-2 border-white dark:border-zinc-900 border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <>
-                <HiOutlineSave className="w-5 h-5" />
-                حفظ الإعدادات
-              </>
-            )}
-          </button>
-
-          {saved && (
-            <p className="text-center text-sm text-green-600 dark:text-green-400 animate-fade-in">
-              ✅ تم حفظ الإعدادات بنجاح
-            </p>
-          )}
         </form>
 
         {/* Account */}
@@ -485,11 +464,30 @@ export default function SettingsPage() {
                 dir="ltr"
               />
             </div>
-            <p className="text-xs text-zinc-400">
-              يتم حفظ الإعدادات عند الضغط على "حفظ الإعدادات" في قسم معلومات الموقع أعلاه.
-            </p>
           </div>
         </div>
+
+        <button
+          type="submit"
+          form="site-settings-form"
+          disabled={saving}
+          className="w-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 px-6 py-3.5 rounded-2xl text-base font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {saving ? (
+            <div className="w-5 h-5 border-2 border-white dark:border-zinc-900 border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <>
+              <HiOutlineSave className="w-5 h-5" />
+              حفظ الإعدادات
+            </>
+          )}
+        </button>
+
+        {saved && (
+          <p className="text-center text-sm text-green-600 dark:text-green-400 animate-fade-in mt-4">
+            ✅ تم حفظ الإعدادات بنجاح
+          </p>
+        )}
     </div>
   )
 }
