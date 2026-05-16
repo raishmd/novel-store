@@ -37,22 +37,17 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    const result = await new Promise<{ secure_url: string; public_id: string }>((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        { folder: `novel-store/${type}`, resource_type: "auto" },
-        (err, result) => {
-          if (err || !result) reject(err || new Error("فشل رفع الملف"))
-          else resolve({ secure_url: result.secure_url, public_id: result.public_id })
-        }
-      )
-      uploadStream.end(buffer)
-    })
+    const result = await cloudinary.uploader.upload(
+      `data:${file.type};base64,${buffer.toString("base64")}`,
+      { folder: `novel-store/${type}`, resource_type: "auto" },
+    )
 
     return NextResponse.json({
       url: result.secure_url,
       filename: result.public_id,
     })
-  } catch {
-    return NextResponse.json({ error: "فشل رفع الملف" }, { status: 500 })
+  } catch (err) {
+    console.error("Upload error:", err)
+    return NextResponse.json({ error: err instanceof Error ? err.message : "فشل رفع الملف" }, { status: 500 })
   }
 }
