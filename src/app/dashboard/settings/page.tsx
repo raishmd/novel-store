@@ -32,6 +32,7 @@ export default function SettingsPage() {
     cloudinaryApiKey: "",
     cloudinaryApiSecret: "",
   })
+  const [databaseUrl, setDatabaseUrl] = useState("")
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
@@ -70,6 +71,7 @@ export default function SettingsPage() {
         cloudinaryApiKey: data.cloudinaryApiKey || "",
         cloudinaryApiSecret: "",
       }))
+      if (data.databaseUrl) setDatabaseUrl(data.databaseUrl)
     }).catch(() => {})
   }, [])
 
@@ -106,6 +108,9 @@ export default function SettingsPage() {
       if (cloudinaryForm.cloudinaryApiKey) cloudinaryBody.cloudinaryApiKey = cloudinaryForm.cloudinaryApiKey
       if (cloudinaryForm.cloudinaryApiSecret) cloudinaryBody.cloudinaryApiSecret = cloudinaryForm.cloudinaryApiSecret
 
+      const dbBody: Record<string, string> = {}
+      if (databaseUrl) dbBody.databaseUrl = databaseUrl
+
       const res = await fetch("/api/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -117,6 +122,7 @@ export default function SettingsPage() {
           authorImage: form.authorImage,
           ...smtpBody,
           ...cloudinaryBody,
+          ...dbBody,
         }),
       })
       if (res.ok) {
@@ -421,6 +427,30 @@ export default function SettingsPage() {
               )}
             </button>
           </form>
+        </div>
+
+        {/* Database */}
+        <div className="mt-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6">
+          <h2 className="text-lg font-bold flex items-center gap-2 mb-6">
+            <HiOutlineKey className="w-5 h-5 text-zinc-400" />
+            قاعدة البيانات (Neon)
+          </h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">رابط قاعدة البيانات (DATABASE_URL)</label>
+              <input
+                type="password"
+                value={databaseUrl}
+                onChange={e => setDatabaseUrl(e.target.value)}
+                placeholder="postgresql://user:pass@ep-xxx.us-east-2.aws.neon.tech/db"
+                className="w-full px-4 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-colors text-left dir-ltr text-xs"
+                dir="ltr"
+              />
+            </div>
+            <p className="text-xs text-zinc-400">
+              ملاحظة: هذا الرابط يُخزن في قاعدة البيانات للتوثيق فقط. للاتصال الفعلي يجب تعيينه في متغيرات البيئة على Vercel (Settings → Environment Variables → DATABASE_URL).
+            </p>
+          </div>
         </div>
 
         {/* Cloudinary */}
