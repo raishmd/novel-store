@@ -1,14 +1,15 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { useSession } from "next-auth/react"
+import { getSession } from "next-auth/react"
+import type { Session } from "next-auth"
 import {
   HiOutlineSave, HiOutlineInformationCircle, HiOutlinePhotograph,
   HiOutlineLockClosed, HiOutlineMail, HiOutlineKey, HiOutlineEye, HiOutlineEyeOff,
 } from "react-icons/hi"
 
 export default function SettingsPage() {
-  const { data: session } = useSession()
+  const [session, setSession] = useState<Session | null>(null)
 
   const [form, setForm] = useState({
     siteName: "متجر الروايات",
@@ -30,6 +31,10 @@ export default function SettingsPage() {
   const [accountSaved, setAccountSaved] = useState(false)
   const [accountError, setAccountError] = useState("")
   const initialized = useRef(false)
+
+  useEffect(() => {
+    getSession().then(setSession)
+  }, [])
 
   useEffect(() => {
     if (initialized.current || !session?.user?.email) return
