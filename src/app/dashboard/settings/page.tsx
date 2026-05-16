@@ -27,6 +27,11 @@ export default function SettingsPage() {
     smtpPass: "",
     smtpFrom: "",
   })
+  const [cloudinaryForm, setCloudinaryForm] = useState({
+    cloudinaryCloudName: "",
+    cloudinaryApiKey: "",
+    cloudinaryApiSecret: "",
+  })
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
@@ -60,6 +65,11 @@ export default function SettingsPage() {
         smtpPass: "",
         smtpFrom: data.smtpFrom || "",
       }))
+      setCloudinaryForm(prev => ({
+        cloudinaryCloudName: data.cloudinaryCloudName || "",
+        cloudinaryApiKey: data.cloudinaryApiKey || "",
+        cloudinaryApiSecret: "",
+      }))
     }).catch(() => {})
   }, [])
 
@@ -91,6 +101,11 @@ export default function SettingsPage() {
       if (smtpForm.smtpPass) smtpBody.smtpPass = smtpForm.smtpPass
       if (smtpForm.smtpFrom) smtpBody.smtpFrom = smtpForm.smtpFrom
 
+      const cloudinaryBody: Record<string, string> = {}
+      if (cloudinaryForm.cloudinaryCloudName) cloudinaryBody.cloudinaryCloudName = cloudinaryForm.cloudinaryCloudName
+      if (cloudinaryForm.cloudinaryApiKey) cloudinaryBody.cloudinaryApiKey = cloudinaryForm.cloudinaryApiKey
+      if (cloudinaryForm.cloudinaryApiSecret) cloudinaryBody.cloudinaryApiSecret = cloudinaryForm.cloudinaryApiSecret
+
       const res = await fetch("/api/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -101,6 +116,7 @@ export default function SettingsPage() {
           authorBio: form.authorBio,
           authorImage: form.authorImage,
           ...smtpBody,
+          ...cloudinaryBody,
         }),
       })
       if (res.ok) {
@@ -405,6 +421,49 @@ export default function SettingsPage() {
               )}
             </button>
           </form>
+        </div>
+
+        {/* Cloudinary */}
+        <div className="mt-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6">
+          <h2 className="text-lg font-bold flex items-center gap-2 mb-6">
+            <HiOutlinePhotograph className="w-5 h-5 text-zinc-400" />
+            إعدادات رفع الصور (Cloudinary)
+          </h2>
+          <div className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium mb-2">Cloud Name</label>
+              <input
+                type="text"
+                value={cloudinaryForm.cloudinaryCloudName}
+                onChange={e => setCloudinaryForm(prev => ({ ...prev, cloudinaryCloudName: e.target.value }))}
+                placeholder="your-cloud-name"
+                className="w-full px-4 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-colors text-left dir-ltr"
+                dir="ltr"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">API Key</label>
+              <input
+                type="text"
+                value={cloudinaryForm.cloudinaryApiKey}
+                onChange={e => setCloudinaryForm(prev => ({ ...prev, cloudinaryApiKey: e.target.value }))}
+                placeholder="123456789012345"
+                className="w-full px-4 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-colors text-left dir-ltr"
+                dir="ltr"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">API Secret</label>
+              <input
+                type="password"
+                value={cloudinaryForm.cloudinaryApiSecret}
+                onChange={e => setCloudinaryForm(prev => ({ ...prev, cloudinaryApiSecret: e.target.value }))}
+                placeholder="اتركه فارغاً إن لم ترد التغيير"
+                className="w-full px-4 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-colors text-left dir-ltr"
+                dir="ltr"
+              />
+            </div>
+          </div>
         </div>
 
         {/* SMTP */}
