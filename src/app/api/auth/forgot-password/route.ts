@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { sendPasswordResetEmail } from "@/lib/email"
 import crypto from "crypto"
 
 export async function POST(request: Request) {
@@ -26,11 +27,14 @@ export async function POST(request: Request) {
       },
     })
 
-    const { sendPasswordResetEmail } = await import("@/lib/email")
     await sendPasswordResetEmail(email, token)
 
     return NextResponse.json({ message: "إذا كان البريد موجوداً، سيتم إرسال رابط إعادة التعيين" })
-  } catch {
-    return NextResponse.json({ error: "حدث خطأ، حاول مرة أخرى" }, { status: 500 })
+  } catch (err) {
+    console.error("forgot-password error:", err instanceof Error ? err.message : err)
+    const message = err instanceof Error && err.message.includes("SMTP")
+      ? "إعدادات البريد الإلكتروني غير مكتملة. أضف SMTP_HOST, SMTP_USER, SMTP_PASS في Vercel"
+      : "حدث خطأ، حاول مرة أخرى"
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
