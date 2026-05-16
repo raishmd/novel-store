@@ -2,12 +2,17 @@
 
 import Link from "next/link"
 import { useSession } from "next-auth/react"
+import { usePathname } from "next/navigation"
 import { ThemeToggle } from "./ThemeToggle"
-import { HiOutlineMenu, HiOutlineX } from "react-icons/hi"
+import { HiOutlineMenu, HiOutlineMenuAlt2, HiOutlineX } from "react-icons/hi"
 import { useState, useEffect } from "react"
+import { useSidebar } from "./SidebarContext"
 
 export function Header() {
   const { data: session } = useSession()
+  const pathname = usePathname()
+  const { open, toggle } = useSidebar()
+  const isDashboard = pathname?.startsWith("/dashboard")
   const [menuOpen, setMenuOpen] = useState(false)
   const [siteName, setSiteName] = useState("متجر الروايات")
   const [scrolled, setScrolled] = useState(false)
@@ -23,7 +28,7 @@ export function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-[60] transition-all duration-300 ${
         scrolled
           ? "bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-zinc-200 dark:border-zinc-800"
           : "bg-transparent"
@@ -31,9 +36,23 @@ export function Header() {
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" className="text-xl font-bold tracking-tight">
-            {siteName}
-          </Link>
+          <div className="flex items-center gap-2">
+            {isDashboard && (
+              <button
+                onClick={toggle}
+                className="md:hidden p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              >
+                {open ? (
+                  <HiOutlineX className="w-5 h-5" />
+                ) : (
+                  <HiOutlineMenuAlt2 className="w-5 h-5" />
+                )}
+              </button>
+            )}
+            <Link href="/" className="text-xl font-bold tracking-tight">
+              {siteName}
+            </Link>
+          </div>
 
           <nav className="hidden md:flex items-center gap-6">
             <Link

@@ -49,7 +49,7 @@ export default function ContactPage() {
   }
 
   const socialLinks = Object.entries(settings)
-    .filter(([key]) => key !== "contactEmail" && key !== "siteName" && key !== "authorName" && key !== "authorBio")
+    .filter(([key]) => key !== "contactEmail" && key !== "siteName" && key !== "authorName" && key !== "authorBio" && key !== "authorRole")
     .filter(([, value]) => value)
 
   const handleSubmit = async (e: React.FormEvent) => {
